@@ -1,0 +1,31 @@
+version: $(informational_version)+{branch}.{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+image: Visual Studio 2017
+configuration:
+  - Debug
+  - Release
+clone_depth: 1
+init:
+  - ps: >-
+      if ($env:appveyor_repo_branch -ne "release")
+      {
+        $env:informational_version = "$env:informational_version+$env:APPVEYOR_REPO_BRANCH.$env:APPVEYOR_BUILD_NUMBER"
+      }
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: $(core_version).{build}
+  assembly_file_version: $(core_version).{build}
+  assembly_informational_version: $(informational_version)
+environment:
+  core_version: 0.1.0
+  informational_version: '%core_version%'
+before_build:
+- ps: nuget restore Source\PawnPlus.sln
+build:
+  verbosity: minimal
+artifacts:
+- path: Build\$(configuration)
+  name: PawnPlus
